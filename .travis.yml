@@ -1,17 +1,20 @@
 language: cpp
 compiler:
-  - clang
+    - gcc
 notifications:
-  email: false
+    email: false
 env:
-  matrix:
-    - JULIAVERSION="juliareleases"
-    - JULIAVERSION="julianightlies"
+    matrix:
+        - JULIAVERSION="juliareleases"
+        - JULIAVERSION="julianightlies"
 before_install:
-  - sudo add-apt-repository ppa:staticfloat/julia-deps -y
-  - sudo add-apt-repository ppa:staticfloat/${JULIAVERSION} -y
-  - sudo apt-get update -qq -y
-  - sudo apt-get install libpcre3-dev julia -y
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+    - sudo add-apt-repository ppa:staticfloat/julia-deps -y
+    - sudo add-apt-repository ppa:staticfloat/${JULIAVERSION} -y
+    - sudo apt-get update -qq -y
+    - sudo apt-get install libpcre3-dev julia -y
 script:
-  - julia -e 'Pkg.init(); Pkg.clone("git@github.com:xianrenb/MyLib.jl.git"); Pkg.test("MyLib")'
+    - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir())/MyLib`); Pkg.resolve()'
+    - julia -e 'versioninfo(); Pkg.build("MyLib");'
+    - julia -e 'using MyLib; @assert isdefined(:MyLib); @assert typeof(MyLib) === Module'
+    - julia test/runtests.jl
+
