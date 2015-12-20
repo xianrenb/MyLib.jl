@@ -1,14 +1,30 @@
-run(`touch deps.jl`)
-run(`rm deps.jl`)
+using Mux
 
-run(`echo 'macro checked_lib(libname, path)
-        (dlopen_e(path) == C_NULL) && error("Unable to load \n\n$libname ($path)\n\nPlease re-run Pkg.build(package), and restart Julia.")
-        quote const $(esc(libname)) = $path end
-    end
-@checked_lib mylib "'"$(Pkg.dir())"'/MyLib/deps/usr/lib/libmylib.so.1"
-'` |> "deps.jl")
+cd(dirname(@__FILE__))
 
-cd("src/mylib/")
-run(`make clean`)
-run(`make all`)
-cd("../../")
+@app test = (
+    Mux.defaults,
+    page(
+        "/mylib.tar",
+        respond(readall(`tar c -p mylib`))
+    ),
+    Mux.notfound()
+)
+
+serve(test)
+
+using BinDeps
+
+const testuri = URI("http://localhost:8000/mylib.tar")
+const shlib_ext = BinDeps.shlib_ext
+
+@BinDeps.setup
+
+deps = [
+    mylib = library_dependency("mylib", aliases = ["libmylib", "libmylib.so.1", "libmylib.so.1.0.0"])
+]
+
+provides(Sources, testuri, mylib)
+provides(BuildProcess, Autotools(libtarget = "libmylib.$shlib_ext"), mylib)
+
+@BinDeps.install Dict(:mylib => :mylib)

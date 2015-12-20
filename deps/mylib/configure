@@ -1,0 +1,24 @@
+touch config.status
+cat <<EOF > Makefile
+all: libmylib.so libmylib.so.1
+
+libmylib.so: libmylib.so.1.0.0
+	ln -s libmylib.so.1.0.0 libmylib.so
+
+libmylib.so.1: libmylib.so.1.0.0
+	ln -s libmylib.so.1.0.0 libmylib.so.1
+
+libmylib.so.1.0.0: mylib.o
+	gcc -shared -Wl,-soname,libmylib.so -o libmylib.so.1.0.0 mylib.o
+
+mylib.o:
+	gcc -c -fPIC ../../src/mylib/mylib.c
+
+clean:
+	rm -rf libmylib.* *.o
+
+install: all
+	cp libmylib.so.1.0.0 ../../usr/lib/
+	ln -s libmylib.so.1.0.0 ../../usr/lib/libmylib.so
+	ln -s libmylib.so.1.0.0 ../../usr/lib/libmylib.so.1
+EOF
