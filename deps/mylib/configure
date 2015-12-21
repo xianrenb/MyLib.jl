@@ -21,5 +21,4 @@ install: all
 	cp libmylib.so.1.0.0 ../../usr/lib/
 	ln -s libmylib.so.1.0.0 ../../usr/lib/libmylib.so
 	ln -s libmylib.so.1.0.0 ../../usr/lib/libmylib.so.1
-	sleep 3
 EOF
