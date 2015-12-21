@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 touch config.status
 cat <<EOF > Makefile
 all: libmylib.so libmylib.so.1
